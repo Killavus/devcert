@@ -23,7 +23,11 @@
       with pkgs;
       {
         devShells.default = mkShell {
-          buildInputs = [ rust-bin.stable.latest.default ];
+          buildInputs = [
+            (rust-bin.stable.latest.default.override {
+              extensions = [ "rust-src" ];
+            })
+          ];
         };
       }
     );
