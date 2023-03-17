@@ -3,24 +3,24 @@ use crate::error::DevcertError;
 use rcgen::{Certificate as RcgenCertificate, CertificateParams, DistinguishedName, IsCa};
 use time::{ext::NumericalDuration, OffsetDateTime};
 
-pub(crate) enum CertType {
-    RootCa,
-    Leaf,
+pub struct CACertificate(rcgen::Certificate);
+
+pub trait Certificate {
+    fn key_pem(&self) -> String;
+    fn cert_pem(&self) -> Result<String, DevcertError>;
 }
 
-pub struct Certificate(rcgen::Certificate, pub(crate) CertType);
-
-impl Certificate {
-    pub fn key_pem(&self) -> String {
+impl Certificate for CACertificate {
+    fn key_pem(&self) -> String {
         self.0.serialize_private_key_pem()
     }
 
-    pub fn cert_pem(&self) -> Result<String, DevcertError> {
+    fn cert_pem(&self) -> Result<String, DevcertError> {
         Ok(self.0.serialize_pem()?)
     }
 }
 
-pub fn create_root_ca_certificate() -> Result<Certificate, DevcertError> {
+pub fn create_root_ca_certificate() -> Result<CACertificate, DevcertError> {
     let params = {
         let mut params = CertificateParams::default();
         params.is_ca = IsCa::Ca(rcgen::BasicConstraints::Unconstrained);
@@ -35,7 +35,6 @@ pub fn create_root_ca_certificate() -> Result<Certificate, DevcertError> {
             );
             dn
         };
-        
 
         // Taken from CA/Browser Forum Document: https://cabforum.org/wp-content/uploads/CA-Browser-Forum-BR-1.4.2.pdf
         let maximum_safe_ca_cert_validity_duration =
@@ -53,8 +52,5 @@ pub fn create_root_ca_certificate() -> Result<Certificate, DevcertError> {
         params
     };
 
-    Ok(Certificate(
-        RcgenCertificate::from_params(params)?,
-        CertType::RootCa,
-    ))
+    Ok(CACertificate(RcgenCertificate::from_params(params)?))
 }
