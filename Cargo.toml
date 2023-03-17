@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 rcgen = "0.10.0"
+thiserror = "1.0.39"
 time = "0.3.20"
