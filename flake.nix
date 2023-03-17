@@ -1,10 +1,17 @@
 {
-  description = "devcert development environment"
+  description = "devcert development environment";
+
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-    rust-overlay.url = "github:oxalica/rust-overlay";
     flake-utils.url = "github:numtide/flake-utils";
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+      };
+    };
   };
+
   outputs = { self, nixpkgs, rust-overlay, flake-utils }:
     flake-utils.lib.eachDefaultSystem (system:
       let
@@ -16,8 +23,8 @@
       with pkgs;
       {
         devShells.default = mkShell {
-          buildInputs = [ rust-bin.stable.latest.default ]
-        }
+          buildInputs = [ rust-bin.stable.latest.default ];
+        };
       }
     );
 }
