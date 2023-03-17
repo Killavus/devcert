@@ -1,4 +1,4 @@
-use crate::error::DevcertError;
+use crate::error::AppResult;
 
 use rcgen::{Certificate as RcgenCertificate, CertificateParams, DistinguishedName, IsCa};
 use time::{ext::NumericalDuration, OffsetDateTime};
@@ -7,7 +7,8 @@ pub struct CACertificate(rcgen::Certificate);
 
 pub trait Certificate {
     fn key_pem(&self) -> String;
-    fn cert_pem(&self) -> Result<String, DevcertError>;
+    fn cert_pem(&self) -> AppResult<String>;
+    fn is_root_cert(&self) -> bool;
 }
 
 impl Certificate for CACertificate {
@@ -15,12 +16,16 @@ impl Certificate for CACertificate {
         self.0.serialize_private_key_pem()
     }
 
-    fn cert_pem(&self) -> Result<String, DevcertError> {
+    fn cert_pem(&self) -> AppResult<String> {
         Ok(self.0.serialize_pem()?)
+    }
+
+    fn is_root_cert(&self) -> bool {
+        true
     }
 }
 
-pub fn create_root_ca_certificate() -> Result<CACertificate, DevcertError> {
+pub fn create_root_ca_certificate() -> AppResult<CACertificate> {
     let params = {
         let mut params = CertificateParams::default();
         params.is_ca = IsCa::Ca(rcgen::BasicConstraints::Unconstrained);
