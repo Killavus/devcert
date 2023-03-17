@@ -22,7 +22,7 @@ impl CertStore {
 
     pub fn new(name: String) -> AppResult<Self> {
         use std::fs;
-        let base_dirs = BaseDirs::new().ok_or_else(|| DevcertError::BasedirError("failed to find base directory storage. It might be that your system is unsupported by devcert.".to_owned()))?;
+        let base_dirs = BaseDirs::new().ok_or_else(|| DevcertError::Basedir("failed to find base directory storage. It might be that your system is unsupported by devcert.".to_owned()))?;
         let path: PathBuf = {
             let mut path: PathBuf = base_dirs.config_dir().into();
             path.push(format!("direnv/stores/{}", name));
