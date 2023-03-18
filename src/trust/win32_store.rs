@@ -32,7 +32,7 @@ impl TrustStore {
             )
         };
 
-        Ok(result)
+        Ok(result.into())
     }
 }
 
