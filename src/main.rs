@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+use certgen::create_host_certificate;
 use certstore::CertStore;
 use clap::{Parser, Subcommand};
 use directories::BaseDirs;
@@ -57,10 +58,12 @@ fn main() -> Result<()> {
     match cli.action {
         CommandLineAction::Install => {
             let ca_cert = certgen::create_root_ca_certificate()?;
-            store.add(ca_cert)?;
+            store.add(&ca_cert)?;
         }
         CommandLineAction::Add { value } => {
-            println!("todo");
+            let ca_cert = store.root_cert()?;
+            let host_cert = create_host_certificate(&value, &ca_cert)?;
+            store.add(&host_cert)?;
         }
     }
 
