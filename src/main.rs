@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use certgen::create_host_certificate;
+use certgen::{create_host_certificate, create_root_ca_certificate};
 use certstore::CertStore;
 use clap::{Parser, Subcommand};
 use directories::BaseDirs;
@@ -39,6 +39,7 @@ enum CommandLineAction {
 }
 
 use color_eyre::eyre::Result;
+use inquire::Select;
 use trust::install_cert_on_machine;
 
 fn main() -> Result<()> {
@@ -59,14 +60,52 @@ fn main() -> Result<()> {
 
     match cli.action {
         CommandLineAction::Install => {
-            let ca_cert = certgen::create_root_ca_certificate(&profile)?;
-            store.add(&ca_cert)?;
+            let ca_cert = store.root_cert()?;
+
+            let mut overwrite_cert = true;
+            if ca_cert.is_some() {
+                let options = vec!["Overwrite the existing certificate (previously generated certificates will stop working!)", "Try to install an existing root certificate with recognized trust stores"];
+                let answer = Select::new(
+                    "Root certificate for profile \"{}\" already exists. Do you want to:",
+                    options,
+                )
+                .prompt()?;
+
+                if answer.starts_with("Try") {
+                    overwrite_cert = false;
+                }
+            }
+
+            let ca_cert = match ca_cert {
+                Some(ca_cert) => {
+                    if overwrite_cert {
+                        create_root_ca_certificate(&profile)?
+                    } else {
+                        ca_cert
+                    }
+                }
+                None => create_root_ca_certificate(&profile)?,
+            };
+
+            if overwrite_cert {
+                store.add(&ca_cert)?;
+            }
+
             install_cert_on_machine(&ca_cert)?;
         }
         CommandLineAction::Add { value } => {
             let ca_cert = store.root_cert()?;
-            let host_cert = create_host_certificate(&profile, &value, &ca_cert)?;
-            store.add(&host_cert)?;
+
+            match ca_cert {
+                Some(ca_cert) => {
+                    let host_cert = create_host_certificate(&profile, &value, &ca_cert)?;
+                    store.add(&host_cert)?;
+                }
+                None => {
+                    eprintln!("Failed to find a root certificate. Either you did not run `install` for the current profile ({}) and root ({}) or it's stored in a location this user has no permissions to read.", profile, root.display());
+                    std::process::exit(1);
+                }
+            }
         }
     }
 

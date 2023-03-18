@@ -22,14 +22,20 @@ impl CertStore {
         Ok(Self { path })
     }
 
-    pub fn root_cert(&self) -> AppResult<Certificate> {
+    pub fn root_cert(&self) -> AppResult<Option<Certificate>> {
         use std::fs;
 
-        let cert_pem = fs::read_to_string({
+        let cert_path = {
             let mut root_cert_path = self.path.clone();
             root_cert_path.push(format!("{}.pem", Self::ROOT_CERT_NAME));
             root_cert_path
-        })?;
+        };
+
+        if !cert_path.exists() {
+            return Ok(None);
+        }
+
+        let cert_pem = fs::read_to_string(cert_path)?;
 
         let key_pem = fs::read_to_string({
             let mut root_key_path = self.path.clone();
@@ -39,9 +45,10 @@ impl CertStore {
 
         use rcgen::{CertificateParams, KeyPair};
         let params = CertificateParams::from_ca_cert_pem(&cert_pem, KeyPair::from_pem(&key_pem)?)?;
-        Ok(Certificate::RootCertificate(
+
+        Ok(Some(Certificate::RootCertificate(
             rcgen::Certificate::from_params(params)?,
-        ))
+        )))
     }
 
     pub fn add(&self, cert: &Certificate) -> AppResult<()> {

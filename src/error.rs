@@ -13,6 +13,8 @@ pub enum DevcertError {
     Basedir(String),
     #[error("error while interacting with certificate store: {0}")]
     CertStore(#[from] io::Error),
-    #[error("error while interacting with Windows API")]
+    #[error("error while interacting with Windows API: {0}")]
     WinApi(#[from] windows::core::Error),
+    #[error("failed to interact with user: {0}")]
+    Inquire(#[from] inquire::InquireError),
 }
