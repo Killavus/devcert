@@ -29,7 +29,7 @@ impl TrustStore {
                 &cert_der,
                 CERT_STORE_ADD_USE_EXISTING,
                 None,
-            );
+            )
         };
 
         Ok(result)
