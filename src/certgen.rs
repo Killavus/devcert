@@ -25,6 +25,10 @@ impl<'cert> Certificate<'cert> {
         }
     }
 
+    pub fn cert_der(&self) -> AppResult<Vec<u8>> {
+        Ok(self.inner().serialize_der()?)
+    }
+
     pub fn key_pem(&self) -> String {
         self.inner().serialize_private_key_pem()
     }

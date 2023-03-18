@@ -9,6 +9,7 @@ use error::DevcertError;
 mod certgen;
 mod certstore;
 mod error;
+mod trust;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -38,6 +39,7 @@ enum CommandLineAction {
 }
 
 use color_eyre::eyre::Result;
+use trust::install_cert_on_machine;
 
 fn main() -> Result<()> {
     color_eyre::install()?;
@@ -59,6 +61,7 @@ fn main() -> Result<()> {
         CommandLineAction::Install => {
             let ca_cert = certgen::create_root_ca_certificate()?;
             store.add(&ca_cert)?;
+            install_cert_on_machine(&ca_cert)?;
         }
         CommandLineAction::Add { value } => {
             let ca_cert = store.root_cert()?;

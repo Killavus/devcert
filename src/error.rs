@@ -13,4 +13,6 @@ pub enum DevcertError {
     Basedir(String),
     #[error("error while interacting with certificate store: {0}")]
     CertStore(#[from] io::Error),
+    #[error("error while interacting with Windows API")]
+    WinApi(#[from] windows::core::Error),
 }
