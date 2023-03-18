@@ -1,33 +1,24 @@
-use std::path::PathBuf;
-
-use directories::BaseDirs;
-
-use crate::{
-    certgen::Certificate,
-    error::{AppResult, DevcertError},
-};
+use crate::{certgen::Certificate, error::AppResult};
+use std::path::{Path, PathBuf};
 
 pub struct CertStore {
     path: PathBuf,
 }
 
 impl CertStore {
-    const DEFAULT_NAME: &str = "default";
+    pub const DEFAULT_PROFILE: &str = "default";
     const ROOT_CERT_NAME: &str = "root.pem";
     const ROOT_KEY_NAME: &str = "root.key.pem";
 
-    pub fn try_default() -> AppResult<Self> {
-        Self::new(Self::DEFAULT_NAME.to_owned())
-    }
-
-    pub fn new(name: String) -> AppResult<Self> {
+    pub fn new(root: &Path, profile: &str) -> AppResult<Self> {
         use std::fs;
-        let base_dirs = BaseDirs::new().ok_or_else(|| DevcertError::Basedir("failed to find base directory storage. It might be that your system is unsupported by devcert.".to_owned()))?;
-        let path: PathBuf = {
-            let mut path: PathBuf = base_dirs.config_dir().into();
-            path.push(format!("direnv/stores/{}", name));
-            path
+
+        let path = {
+            let mut buf: PathBuf = root.into();
+            buf.push(format!("stores/{}", profile));
+            buf
         };
+
         fs::create_dir_all(&path)?;
         Ok(Self { path })
     }
