@@ -18,11 +18,11 @@ impl TrustStore {
         Ok(Self { store: root_store })
     }
 
-    pub fn install(&self, cert: &Certificate) -> AppResult<()> {
+    pub fn install(&self, cert: &Certificate) -> AppResult<bool> {
         assert!(matches!(cert, Certificate::RootCertificate(_)));
         let cert_der = cert.cert_der()?;
 
-        unsafe {
+        let result = unsafe {
             CertAddEncodedCertificateToStore(
                 self.store,
                 X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
@@ -30,9 +30,9 @@ impl TrustStore {
                 CERT_STORE_ADD_USE_EXISTING,
                 None,
             );
-        }
+        };
 
-        Ok(())
+        Ok(result)
     }
 }
 
