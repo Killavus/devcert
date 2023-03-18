@@ -48,14 +48,17 @@ impl<'cert> Certificate<'cert> {
     }
 }
 
-pub fn create_root_ca_certificate<'cert>() -> AppResult<Certificate<'cert>> {
+pub fn create_root_ca_certificate<'cert>(profile: &str) -> AppResult<Certificate<'cert>> {
     let params = {
         let mut params = CertificateParams::default();
         params.is_ca = IsCa::Ca(rcgen::BasicConstraints::Unconstrained);
         params.distinguished_name = {
             use rcgen::DnType;
             let mut dn = DistinguishedName::new();
-            dn.push(DnType::OrganizationName, "devcert");
+            dn.push(
+                DnType::OrganizationName,
+                format!("devcert - profile \"{profile}\""),
+            );
             dn.push(DnType::CountryName, "US");
             dn.push(
                 DnType::LocalityName,
@@ -88,6 +91,7 @@ pub fn create_root_ca_certificate<'cert>() -> AppResult<Certificate<'cert>> {
 }
 
 pub fn create_host_certificate<'cert>(
+    profile: &str,
     host: &str,
     root_cert: &'cert Certificate,
 ) -> AppResult<Certificate<'cert>> {
@@ -102,7 +106,10 @@ pub fn create_host_certificate<'cert>(
         params.distinguished_name = {
             use rcgen::DnType;
             let mut dn = DistinguishedName::new();
-            dn.push(DnType::OrganizationName, "devcert");
+            dn.push(
+                DnType::OrganizationName,
+                format!("devcert - profile \"{profile}\" host \"{host}\""),
+            );
             dn.push(DnType::CountryName, "US");
             dn.push(
                 DnType::LocalityName,

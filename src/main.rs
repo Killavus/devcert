@@ -59,13 +59,13 @@ fn main() -> Result<()> {
 
     match cli.action {
         CommandLineAction::Install => {
-            let ca_cert = certgen::create_root_ca_certificate()?;
+            let ca_cert = certgen::create_root_ca_certificate(&profile)?;
             store.add(&ca_cert)?;
             install_cert_on_machine(&ca_cert)?;
         }
         CommandLineAction::Add { value } => {
             let ca_cert = store.root_cert()?;
-            let host_cert = create_host_certificate(&value, &ca_cert)?;
+            let host_cert = create_host_certificate(&profile, &value, &ca_cert)?;
             store.add(&host_cert)?;
         }
     }
