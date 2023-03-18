@@ -51,7 +51,6 @@ impl CertStore {
             {
                 let mut path = self.path.clone();
                 path.push(format!("{}.pem", cert.name()));
-                println!("{}", path.display());
                 path
             },
             cert.cert_pem()?,
@@ -61,7 +60,6 @@ impl CertStore {
             {
                 let mut path = self.path.clone();
                 path.push(format!("{}.key.pem", cert.name()));
-                println!("{}", path.display());
                 path
             },
             cert.key_pem(),
