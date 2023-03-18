@@ -66,7 +66,7 @@ fn main() -> Result<()> {
             if ca_cert.is_some() {
                 let options = vec!["Overwrite the existing certificate (previously generated certificates will stop working!)", "Try to install an existing root certificate with recognized trust stores"];
                 let answer = Select::new(
-                    "Root certificate for profile \"{}\" already exists. Do you want to:",
+                    &format!("Root certificate for profile \"{profile}\" already exists. Do you want to:"),
                     options,
                 )
                 .prompt()?;
