@@ -17,4 +17,6 @@ pub enum DevcertError {
     WinApi(#[from] windows::core::Error),
     #[error("failed to interact with user: {0}")]
     Inquire(#[from] inquire::InquireError),
+    #[error("failed to install certificates in Firefox: {0}")]
+    Firefox(String),
 }
